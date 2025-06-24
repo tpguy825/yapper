@@ -1,0 +1,7 @@
+{
+	"name": "yapper",
+	"private": true,
+	"workspaces": [
+		"packages/*"
+	]
+}
