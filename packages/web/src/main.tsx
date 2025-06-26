@@ -10,4 +10,6 @@ const isDev = import.meta.env.DEV;
 export const eden = edenTreaty<BackendApp>(isDev ? "http://localhost:63273" : "https://some-domain.example.com");
 export const pb = new PocketBase("http://localhost:8090");
 
+window.pb = pb;
+
 render(<App />, document.getElementById("app")!);

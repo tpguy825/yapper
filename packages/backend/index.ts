@@ -1,17 +1,12 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import type { DMs, User } from "./types";
 import cors from "@elysiajs/cors";
 import PocketBase from "pocketbase";
 
 async function auth(header: string) {
 	const pb = new PocketBase("http://localhost:8090");
-	if (!header.startsWith("Bearer ")) {
-		throw new Error("Invalid authorization header");
-	}
-
-	const token = header.slice(7);
 	try {
-		pb.authStore.save(token);
+		pb.authStore.save(header);
 		if (!pb.authStore.isValid) {
 			throw new Error("Invalid token");
 		}
@@ -22,31 +17,49 @@ async function auth(header: string) {
 	}
 }
 
+const superuserpb = new PocketBase("http://localhost:8090");
+superuserpb.collection("_superusers").authWithPassword(process.env.POCKETBASE_USERNAME || "", process.env.POCKETBASE_PASSWORD || "");
+
 const usersapi = new Elysia()
-	.get("/me/userchats", async ({ status, headers }) => {
+	.post("/me/createDM", async ({ body: {username}, headers, status }) => {
 		const pb = await auth(headers.authorization || "");
+		if (!username || username.trim() === "") {
+			return status(400, { message: "Username cannot be empty." });
+		}
+		let user: User;
 		try {
+			user = await superuserpb.collection<User>("users").getFirstListItem(`username = "${username}"`);
+			if (!user) {
+				return status(404, { message: "User not found." });
+			}
+		} catch (error) {
+			console.error("Error fetching user:", error);
+			return status(404, { message: "User not found." });
+		}
+		try{
+			if (user.id === pb.authStore.record?.id) {
+				return status(400, { message: "You cannot create a DM with yourself." });
+			}
+			const newDM = await superuserpb.collection<DMs>("dms").create({
+				users: [pb.authStore.record?.id, user.id],
+			});
 			return {
-				result: await pb.collection<DMs>("dms").getFullList({
-					filter: "users.id = '" + pb.authStore.record?.id + "'",
-					expand: "users",
-					sort: "-created",
-				}),
-				yourid: pb.authStore.record?.id,
+				...newDM,
+				expand: {
+					users: [pb.authStore.record as User, user],
+				},
 			};
 		} catch (error) {
-			console.error("Error fetching user chats:", error);
-			return status(500);
+			console.error("Error creating DM:", error);
+			return status(500, { message: "Failed to create DM. Please try again." });
 		}
+	}, {
+		body: t.Object({
+			username: t.String(),
+		}),
 	})
-	.get("/me/userchats/:id/messages", async ({ status, params, headers }) => {
-		const pb = await auth(headers.authorization || "");
-		try {
-		} catch (error) {
-			console.error("Error fetching user chat:", error);
-			return status(500);
-		}
-	});
+
+
 
 const app = new Elysia()
 	.use(cors())

@@ -1,20 +1,25 @@
 import { useEffect, useState } from "preact/hooks";
 import { Sidebar } from "./components/sidebar";
 import type { DMs } from "backend/types.ts";
-import { eden, pb } from "./main";
+import { pb } from "./main";
 import { LocationProvider, Route, Router } from "preact-iso";
 
 import GithubIcon from "./assets/lucide/github.svg";
+import { Messages } from "./components/messages";
 
 export function MainApp() {
 	const [DMs, setDMs] = useState<DMs[] | null>(null);
 	const [selectedDM, setSelectedDM] = useState<DMs | null>(null);
 
 	useEffect(() => {
+		if (!pb.authStore.isValid) {
+			window.location.href = "/login";
+			return;
+		}
 		try {
 			pb.collection<DMs>("dms")
 				.getFullList({
-					filter: "users.id = '" + pb.authStore.record?.id + "'",
+					filter: `users ~ "${pb.authStore.record?.id}"`,
 					expand: "users",
 					sort: "-created",
 				})
@@ -32,7 +37,7 @@ export function MainApp() {
 				})
 				.catch((error) => {
 					console.error("Error fetching users:", error);
-					setDMs([]);
+					window.location.href = "/login";
 				});
 		} catch (error) {
 			console.error("Failed to fetch users:", error);
@@ -41,22 +46,9 @@ export function MainApp() {
 	}, []);
 
 	return DMs ? (
-		<div class="flex h-screen">
+		<div class="flex h-screen noanim">
 			<Sidebar dms={DMs} setSelectedDM={setSelectedDM} mode="messages" />
-			<div>
-				{selectedDM ? (
-					<div class="flex">
-						<img
-							src={selectedDM.expand.users[0].avatar}
-							alt={selectedDM.expand.users[0].name}
-							class="w-20 h-20 rounded-full"
-						/>
-						<h3 class="text-2xl font-bold">{selectedDM.name}</h3>
-					</div>
-				) : (
-					<p class="text-gray-500">Select a user to see details</p>
-				)}
-			</div>
+			<Messages selectedDM={selectedDM} />
 		</div>
 	) : null;
 }

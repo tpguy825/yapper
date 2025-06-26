@@ -4,10 +4,16 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>yapper</title>
+		<style>
+			*:not(.noanim) {
+				animation: ease-in-out;
+				transition: all 0.2s;
+			}
+		</style>
 	</head>
-	<body>
+	<body class="noanim bg-black">
 		<noscript>Javascript is required, sorry!</noscript>
-		<div id="app"></div>
+		<div id="app" class="noanim"></div>
 		<script type="module" src="/src/main.tsx"></script>
 	</body>
 </html>
