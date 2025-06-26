@@ -9,8 +9,12 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
+		"@elysiajs/eden": "^1.3.2",
+		"@tailwindcss/vite": "^4.1.10",
 		"pocketbase": "^0.26.1",
-		"preact": "^10.26.9"
+		"preact": "^10.26.9",
+		"preact-iso": "^2.9.2",
+		"vite-plugin-magical-svg": "^1.7.2"
 	},
 	"devDependencies": {
 		"@preact/preset-vite": "^2.10.1",
