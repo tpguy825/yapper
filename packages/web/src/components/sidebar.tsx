@@ -40,28 +40,25 @@ export function Sidebar({
 					</div>
 					<span class="bg-zinc-700 w-8 h-0.5 rounded-4xl block mx-auto"></span>
 				</div>
-				{dms.map((dm ,i) => (
+				{dms.map((dm, i) =>
 					Array.isArray(dm) ? (
 						<div
 							key={i}
-							title={"Group DM with users: " + dm.map(user => user.name).join(", ")}
+							title={"Group DM with users: " + dm.map((user) => user.name).join(", ")}
 							class="w-14 h-14 rounded-full cursor-pointer hover:opacity-95 focus:outline-none"
 							onClick={() => setSelectedDM(dm)}>
-							<img
-								src={dm[0].avatar}
-								alt={dm[0].name}
-								class="w-14 h-14 rounded-full"
-							/>
+							<img src={dm[0].avatar} alt={dm[0].name} class="w-14 h-14 rounded-full" />
 						</div>
-					
-					) : <button
-						title={dm.username}
-						key={i}
-						class="w-14 h-14 rounded-full cursor-pointer hover:opacity-95 focus:outline-none"
-						onClick={() => setSelectedDM(dm)}>
-						<img src={dm.avatar} alt={dm.name} class="w-14 h-14 rounded-full" />
-					</button>
-				))}
+					) : (
+						<button
+							title={dm.username}
+							key={i}
+							class="w-14 h-14 rounded-full cursor-pointer hover:opacity-95 focus:outline-none"
+							onClick={() => setSelectedDM(dm)}>
+							<img src={dm.avatar} alt={dm.name} class="w-14 h-14 rounded-full" />
+						</button>
+					),
+				)}
 			</div>
 		</div>
 	);
